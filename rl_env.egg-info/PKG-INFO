@@ -1,0 +1,127 @@
+Metadata-Version: 2.4
+Name: rl-env
+Version: 0.1.0
+Summary: Reinforcement Learning environment framework implemented from scratch
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy>=1.20.0
+Requires-Dist: matplotlib>=3.5.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: black>=22.0.0; extra == "dev"
+Requires-Dist: flake8>=4.0.0; extra == "dev"
+Dynamic: license-file
+
+# Reinforcement Learning Environment Framework
+
+A custom implementation of an RL environment framework built from scratch.
+
+## Features
+
+- Custom `Env` base class with standard RL interface
+- Space classes: `Discrete`, `Box`, `MultiDiscrete`, `Dict`, `Tuple`
+- Grid World environment implementation with matplotlib visualization
+- Environment wrappers for reward/observation/action transformation
+- Agent framework with base `Agent` class and `RandomAgent` implementation
+- Simulation module for running episodes with statistics tracking
+- Interactive and RGB array rendering modes
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Usage
+
+### Basic Environment
+
+```python
+from rl_env.envs.grid_world import GridWorldEnv
+
+# Create environment
+env = GridWorldEnv(size=5, render_mode="human")
+
+# Reset environment
+obs, info = env.reset(seed=42)
+
+# Run episode
+for _ in range(100):
+    action = env.action_space.sample()  # Random action
+    obs, reward, terminated, truncated, info = env.step(action)
+    
+    if env.render_mode == "human":
+        env.render()  # Opens interactive matplotlib window
+    
+    if terminated or truncated:
+        obs, info = env.reset()
+
+env.close()  # Closes matplotlib window
+```
+
+### Using Wrappers
+
+```python
+from rl_env.envs.grid_world import GridWorldEnv
+from rl_env.wrappers import ClipReward, RelativePosition
+
+env = GridWorldEnv(size=5)
+env = ClipReward(env, min_reward=-1.0, max_reward=1.0)
+env = RelativePosition(env)
+
+obs, info = env.reset()
+```
+
+### Running Simulations
+
+```python
+from rl_env.envs.grid_world import GridWorldEnv
+from rl_env.agents.random_agent import RandomAgent
+from rl_env.simulation import Simulation
+
+# Create environment and agent
+env = GridWorldEnv(size=5, render_mode="human")
+agent = RandomAgent(env.action_space, seed=42)
+
+# Create and run simulation
+sim = Simulation(env=env, agent=agent, max_steps=100, render=True)
+stats = sim.run_episodes(num_episodes=5, seed=42)
+
+env.close()
+```
+
+## Project Structure
+
+```
+rl_env/
+├── core/
+│   ├── env.py          # Base Env class
+│   └── spaces.py       # Space classes
+├── envs/
+│   ├── grid_world.py   # Grid World environment
+│   └── __init__.py
+├── agents/
+│   ├── base.py         # Base Agent class
+│   ├── random_agent.py # Random agent implementation
+│   └── __init__.py
+├── wrappers/
+│   ├── base.py         # Base wrapper classes
+│   ├── clip_reward.py
+│   ├── discrete_actions.py
+│   ├── relative_position.py
+│   ├── reacher_weighted_reward.py
+│   └── __init__.py
+├── simulation.py       # Simulation runner
+└── __init__.py
+```
+
+## Dependencies
+
+- `numpy>=1.20.0` - Numerical computations
+- `matplotlib>=3.5.0` - Environment visualization
+
+## License
+
+See LICENSE file.
+
